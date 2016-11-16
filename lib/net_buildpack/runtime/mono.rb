@@ -63,7 +63,7 @@ module NETBuildpack::Runtime
 
       time_operation "Installing Mozilla certificate data to .config/.mono/certs" do
         sh "ln -s #{stage_time_absolute_path("vendor")} /app/vendor", {:silent => true, :env => @config_vars}
-        sh "#{stage_time_absolute_path(mozroots_exe)} --import --sync", {:silent => true, :env => @config_vars}
+        sh "#{stage_time_absolute_path(mozroots_exe)} --import --sync --machine --url \"http://hg.mozilla.org/releases/mozilla-release/raw-file/default/security/nss/lib/ckfw/builtins/certdata.txt\"", {:silent => true, :env => @config_vars}
       end
     end
 
