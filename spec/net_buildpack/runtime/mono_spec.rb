@@ -95,6 +95,8 @@ module NETBuildpack::Runtime
                 cmd.should include('mozroots')
                 cmd.should include('--import')
                 cmd.should include('--sync')
+                cmd.should include('--machine')
+                cmd.should include('--url http://hg.mozilla.org/releases/mozilla-release/raw-file/default/security/nss/lib/ckfw/builtins/certdata.txt')
                 options[:env].should include('HOME'=>root, 'XDG_CONFIG_HOME' => '$HOME/.config')
             end
             0
