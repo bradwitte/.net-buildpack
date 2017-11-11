@@ -8,7 +8,7 @@ We try to always bundle the most recent Mono runtime (currently 3.2.5)
 
 The total available memory is specified when an application is pushed. The .net-buildpack uses this value to control the maximum amout of memory that Mono can use for the heap via the [`MONO_GC_PARAMS` environment variable](http://www.mono-project.com/Release_Notes_Mono_2.8#Configuration)
 
-`MONO_GC_PARAMS="major=marksweep-par,max-heap-size=$(ENV['MEMORY_LIMIT']-48M)"`
+`MONO_GC_PARAMS="major=marksweep-conc,max-heap-size=$(ENV['MEMORY_LIMIT']-48M)"`
 
 Note: if the total available memory is scaled up or down, the .net-buildpack does not re-calculate the  memory settings until the next time the application is pushed (ie, staged).
 

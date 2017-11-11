@@ -188,7 +188,7 @@ EXPECTED_START_SCRIPT
             :config_vars => config_vars
         ).release
 
-        expect(config_vars["MONO_GC_PARAMS"]).to include("major=marksweep-par")
+        expect(config_vars["MONO_GC_PARAMS"]).to include("major=marksweep-conc")
         expect(config_vars["MONO_GC_PARAMS"]).to include("max-heap-size=464M")
       end
     end

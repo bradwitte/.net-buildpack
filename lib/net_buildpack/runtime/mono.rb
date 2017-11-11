@@ -90,7 +90,7 @@ module NETBuildpack::Runtime
       @config_vars["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$HOME/#{mono_bin}:$PATH"
       @config_vars["RUNTIME_COMMAND"] = "#{runtime_command}"
       @config_vars["XDG_CONFIG_HOME"] = "$HOME/.config"
-      @config_vars["MONO_GC_PARAMS"] = "major=marksweep-par,max-heap-size=#{max_heap}"
+      @config_vars["MONO_GC_PARAMS"] = "major=marksweep-conc,max-heap-size=#{max_heap}"
     end
 
     # Returns the max heap memory that can be used, based on ENV['MEMORY_LIMIT']
