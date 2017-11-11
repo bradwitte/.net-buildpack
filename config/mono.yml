@@ -16,4 +16,4 @@
 # Configuration for Mono repositories
 ---
 repository_root: "http://mono-5416.mcf-np.local"
-version: 5.4.1_full-strip
+version: 5.4.1_fullstrip
