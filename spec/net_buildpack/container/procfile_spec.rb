@@ -32,7 +32,7 @@ module NETBuildpack::Container
           app_dir: 'spec/fixtures/procfile'
       ).detect
 
-      expect(detected).to be_true
+      expect(detected).to be_truthy
     end
 
     it 'should have forego as the run command in the startup script' do

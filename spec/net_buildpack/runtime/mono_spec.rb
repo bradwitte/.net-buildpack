@@ -68,7 +68,7 @@ module NETBuildpack::Runtime
         ).compile
 
         mono = File.join(root, 'vendor', 'mono', 'bin', 'mono')
-        expect(File.exists?(mono)).to be_true
+        expect(File.exists?(mono)).to be_truthy
       end
     end
 
@@ -115,7 +115,7 @@ module NETBuildpack::Runtime
         ).release
 
         start_script_path = File.join(root, 'start.sh')
-        expect(File.exists?(start_script_path)).to be_true
+        expect(File.exists?(start_script_path)).to be_truthy
 
         start_script = File.read(start_script_path)
         expected_start_script = <<EXPECTED_START_SCRIPT
