@@ -15,5 +15,5 @@
 
 # Configuration for Mono repositories
 ---
-repository_root: "https://github.com/bradwitte/.net-buildpack/releases/download/v5.4.1"
+repository_root: "https://github.com/bradwitte/.net-buildpack/releases/download/mono5"
 version: 5.4.1_fullstrip
