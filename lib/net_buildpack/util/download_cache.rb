@@ -94,10 +94,7 @@ module NETBuildpack::Util
     end
 
     def download(filenames, uri)
-      rich_uri = URI(uri)
-      Net::HTTP.start(rich_uri.host, rich_uri.port, :use_ssl => (rich_uri.scheme == 'https')) do |http|
-        request = Net::HTTP::Get.new(uri)
-        http.request request do |response|
+        http.request resolve(uri, false) do |response|
           write_response(filenames, response)
         end
       end
@@ -138,14 +135,8 @@ module NETBuildpack::Util
     end
 
     def update(filenames, uri)
-      rich_uri = URI(uri)
 
-      Net::HTTP.start(rich_uri.host, rich_uri.port, :use_ssl => (rich_uri.scheme == 'https')) do |http|
-        request = Net::HTTP::Get.new(uri)
-        set_header request, 'If-None-Match', filenames[:etag]
-        set_header request, 'If-Modified-Since', filenames[:last_modified]
-
-        http.request request do |response|
+        http.request resolve(uri, true) do |response|
           write_response(filenames, response) unless response.code == '304'
         end
       end
@@ -160,6 +151,59 @@ module NETBuildpack::Util
           cached_file.write(chunk)
         end
       end
+    end
+
+    def resolve(uri_str, updateflag, agent = 'curl/7.43.0', max_attempts = 10, timeout = 10)
+      attempts = 0
+      cookie = nil
+  
+      until attempts >= max_attempts
+        attempts += 1
+  
+        url = URI.parse(uri_str)
+        http = Net::HTTP.new(url.host, url.port)
+        http.open_timeout = timeout
+        http.read_timeout = timeout
+        path = url.path
+        path = '/' if path == ''
+        path += '?' + url.query unless url.query.nil?
+  
+        params = { 'User-Agent' => agent, 'Accept' => '*/*' }
+        params['Cookie'] = cookie unless cookie.nil?
+        request = Net::HTTP::Get.new(path, params)
+  
+        if url.instance_of?(URI::HTTPS)
+          http.use_ssl = true
+          http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        end
+
+        if updateflag
+          set_header request, 'If-None-Match', filenames[:etag]
+          set_header request, 'If-Modified-Since', filenames[:last_modified]
+        end
+
+        response = http.request(request)
+  
+        case response
+          when Net::HTTPSuccess then
+            break
+          when Net::HTTPRedirection then
+            location = response['Location']
+            cookie = response['Set-Cookie']
+            new_uri = URI.parse(location)
+            uri_str = if new_uri.relative?
+                        url + location
+                      else
+                        new_uri.to_s
+                      end
+          else
+            raise 'Unexpected response: ' + response.inspect
+        end
+  
+      end
+      raise 'Too many http redirects' if attempts == max_attempts
+  
+      response
     end
 
   end
