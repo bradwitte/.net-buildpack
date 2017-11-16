@@ -17,6 +17,7 @@ require 'net_buildpack/util'
 require 'net/http'
 require 'tmpdir'
 require 'uri'
+require 'openssl'
 
 module NETBuildpack::Util
 
@@ -94,10 +95,7 @@ module NETBuildpack::Util
     end
 
     def download(filenames, uri)
-        http.request resolve(uri, false) do |response|
-          write_response(filenames, response)
-        end
-      end
+      resolve(uri, false, filenames)
     end
 
     def filenames(uri)
@@ -135,11 +133,7 @@ module NETBuildpack::Util
     end
 
     def update(filenames, uri)
-
-        http.request resolve(uri, true) do |response|
-          write_response(filenames, response) unless response.code == '304'
-        end
-      end
+      resolve(uri, true, filenames)
     end
 
     def write_response(filenames, response)
@@ -153,10 +147,10 @@ module NETBuildpack::Util
       end
     end
 
-    def resolve(uri_str, updateflag, agent = 'curl/7.43.0', max_attempts = 10, timeout = 10)
+    def resolve(uri_str, updateflag, filenames, agent = 'curl/7.43.0', max_attempts = 10, timeout = 10)
       attempts = 0
       cookie = nil
-  
+
       until attempts >= max_attempts
         attempts += 1
   
@@ -167,11 +161,11 @@ module NETBuildpack::Util
         path = url.path
         path = '/' if path == ''
         path += '?' + url.query unless url.query.nil?
-  
+
         params = { 'User-Agent' => agent, 'Accept' => '*/*' }
         params['Cookie'] = cookie unless cookie.nil?
         request = Net::HTTP::Get.new(path, params)
-  
+
         if url.instance_of?(URI::HTTPS)
           http.use_ssl = true
           http.verify_mode = OpenSSL::SSL::VERIFY_NONE
@@ -182,30 +176,32 @@ module NETBuildpack::Util
           set_header request, 'If-Modified-Since', filenames[:last_modified]
         end
 
-        response = http.request(request)
-  
-        case response
-          when Net::HTTPSuccess then
-            break
-          when Net::HTTPRedirection then
-            location = response['Location']
-            cookie = response['Set-Cookie']
-            new_uri = URI.parse(location)
-            uri_str = if new_uri.relative?
-                        url + location
-                      else
-                        new_uri.to_s
-                      end
-          else
-            raise 'Unexpected response: ' + response.inspect
+        http.request request do |response|
+          case response
+            when Net::HTTPSuccess then
+              write_response(filenames, response)
+            when Net::HTTPRedirection then
+              if response.code == '302'
+                location = response['Location']
+                cookie = response['Set-Cookie']
+                new_uri = URI.parse(URI.encode(location.to_s))
+                uri_str = if new_uri.relative?
+                            url + location
+                          else
+                            new_uri.scheme.to_s + '://' + new_uri.host.to_s + new_uri.path + '?' + URI.decode(new_uri.query)
+                          end
+              elsif response.code == '304'
+                return
+              end
+              break
+            else
+              raise 'Unexpected response: ' + response.inspect
+          end
+          return
         end
-  
       end
       raise 'Too many http redirects' if attempts == max_attempts
-  
-      response
+
     end
-
   end
-
 end
