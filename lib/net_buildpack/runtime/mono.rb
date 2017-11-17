@@ -91,6 +91,7 @@ module NETBuildpack::Runtime
       @config_vars["RUNTIME_COMMAND"] = "#{runtime_command}"
       @config_vars["XDG_CONFIG_HOME"] = "$HOME/.config"
       @config_vars["MONO_GC_PARAMS"] = "major=marksweep-conc,max-heap-size=#{max_heap}"
+      @config_vars["MONO_THREADS_PER_CPU"] = "#{threads_per_cpu}"
     end
 
     # Returns the max heap memory that can be used, based on ENV['MEMORY_LIMIT']
@@ -102,6 +103,10 @@ module NETBuildpack::Runtime
       memory_limit_size = NETBuildpack::Util::MemorySize.new(memory_limit) - NETBuildpack::Util::MemorySize.new("48M")
       fail "Invalid negative $MEMORY_LIMIT #{memory_limit}" if memory_limit_size < 0
       memory_limit_size
+    end
+
+    def threads_per_cpu
+      2048
     end
 
     def create_start_script
