@@ -64,7 +64,7 @@ module NETBuildpack::Runtime
       time_operation "Installing Mozilla certificate data to .config/.mono/certs" do
         sh "ln -s #{stage_time_absolute_path("vendor")} /app/vendor", {:silent => true, :env => @config_vars}
         sh "#{stage_time_absolute_path(mozroots_exe)} --import --sync", {:silent => true, :env => @config_vars}
-        sh "#{stage_time_absolute_path(cert_sync_exe)} /etc/ssl/certs/ca.certificates.crt", {:silent => true, :env => @config_vars}
+        sh "#{stage_time_absolute_path(cert_sync_exe)} /etc/ssl/certs/ca-certificates.crt", {:silent => true, :env => @config_vars}
       end
     end
 
